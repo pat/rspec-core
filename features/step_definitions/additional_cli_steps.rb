@@ -176,25 +176,16 @@ Given(/^files "(.*?)" through "(.*?)" with an unrelated passing spec in each fil
 end
 
 Then(/^bisect should (succeed|fail) with output like:$/) do |succeed, expected_output|
-  all_commands.each do |command|
-    puts command.commandline
-    puts command.exit_status
-    puts command.output
-  end
   last_process = all_commands.last
-
-  puts last_command_started.commandline
-  puts last_command_started.exit_status
-  puts last_command_started.output
-
-  puts last_command_stopped.commandline
-  puts last_command_stopped.exit_status
-  puts last_command_stopped.output
-
-  expected_status = succeed == "succeed" ? 0 : 1
-  expect(last_command_stopped.exit_status).to eq(expected_status),
-    "Expected exit status of #{expected_status} but got #{last_command_stopped.exit_status} \n\n" \
+  if succeed == "succeed"
+    expect(last_process.exit_status).to eq(0),
+    "Expected exit status of 0 but got #{last_process.exit_status} \n\n" \
     "Output:\n\n#{last_process.stdout}"
+  else
+    expect(last_command_stopped.exit_status).not_to eq(0),
+      "Expected exit status of > 0 but got #{last_process.exit_status} \n\n" \
+      "Output:\n\n#{last_process.stdout}"
+  end
 
   expected = normalize_durations(expected_output)
   actual   = normalize_durations(last_process.stdout)
